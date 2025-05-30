@@ -34,8 +34,13 @@ public class Employee_C {
     }
     @PutMapping("{id}")
     public ResponseEntity<Employee_Dto> updateEmployee
-            (@PathVariable Long id, @RequestBody Employee_Dto updatedEmployeeDto){
+            (@PathVariable("id") Long id, @RequestBody Employee_Dto updatedEmployeeDto){
         Employee_Dto employee_dto= employee_S.updateEmployee(id, updatedEmployeeDto);
         return ResponseEntity.ok(employee_dto);
+    }
+    @DeleteMapping("{id}")
+    public ResponseEntity<String> deleteEmployee(@PathVariable("id") Long id){
+        employeeService.deleteEmployee(id);
+        return ResponseEntity.ok("Employee deleted Successfully");
     }
 }
