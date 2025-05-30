@@ -8,4 +8,5 @@ public interface Employee_S {
     Employee_Dto getEmployeeById(Long id);
     List<Employee_Dto> getAllEmployees();
     Employee_Dto updateEmployee(Long id, Employee_Dto updatedEmployee);
+    void deleteEmployee(Long id);
 }

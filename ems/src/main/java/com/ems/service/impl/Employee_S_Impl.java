@@ -1,11 +1,11 @@
-package com.ems.service;
-
+package com.ems.service.impl;
 
 import com.ems.dto.Employee_Dto;
 import com.ems.entity.Employee;
 import com.ems.exception.ResourceNotFoundException;
 import com.ems.mapper.Employee_M;
 import com.ems.repository.Employee_R;
+import com.ems.service.Employee_S;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
-public class Employee_S_Impl implements Employee_S{
+public class Employee_S_Impl implements Employee_S {
 
     private Employee_R employee_R;
 
