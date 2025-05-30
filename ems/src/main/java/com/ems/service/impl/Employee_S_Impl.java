@@ -49,4 +49,11 @@ public class Employee_S_Impl implements Employee_S {
         Employee updateEmployeeObj = employee_R.save(employee);
         return Employee_M.mapToEmployeeDto(updateEmployeeObj);
     }
+
+    @Override
+    public void deleteEmployee(Long id) {
+        Employee employee = employee_R.findById(id).orElseThrow(
+                ()->new ResourceNotFoundException("Employee is not exist with id: "+ id));
+        employee_R.deleteById(id);
+    }
 }
