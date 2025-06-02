@@ -1,5 +1,5 @@
 import './App.css'
-import Employeecomponent from './components/Employeecomponent'
+import EmployeeComponent from './components/Employeecomponent'
 import FooterCompoment from './components/footerCompoment'
 import HeaderComponent from './components/HeaderComponent'
 import ListEmployeeComponent from './components/ListEmployeeComponent'
@@ -9,13 +9,13 @@ function App() {
   return (
     <>
       <BrowserRouter>
-        <HeaderComponent />
+        <HeaderComponent/>
         <Routes>
-          <Route path='/' element={<ListEmployeeComponent />}></Route>
+          {/*<Route path='/' element={<ListEmployeeComponent />}></Route>*/}
           <Route path='/employees' element={<ListEmployeeComponent />}></Route>
-          <Route path='/add' element={ <Employeecomponent />}></Route>
+          <Route path='/add' element={ <EmployeeComponent/>}></Route>
         </Routes>
-        <FooterCompoment />
+        <FooterCompoment/>
       </BrowserRouter>
     </>
   )
