@@ -1,0 +1,503 @@
+app
+
+import Link from "next/link";
+
+export default function Home() {
+  return (
+    <Link
+      href="/employees"
+      className='btn btn-primary'
+      >
+    Employees List
+    </Link>
+  );
+}
+
+(dashboard)/add
+// app/add/page.jsx
+'use client'
+
+import { useState } from 'react'
+import { createEmployee } from '../../services/AxiosService'
+import { useRouter } from 'next/navigation'
+
+export default function AddEmployeePage() {
+    const [formData, setFormData] = useState({
+        firstName: '',
+        lastName: '',
+        email: ''
+    })
+    const [errors, setErrors] = useState({
+        firstName: '',
+        lastName: '',
+        email: ''
+    })
+    const router = useRouter()
+
+    const handleChange = (e) => {
+        const { name, value } = e.target
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }))
+    }
+
+    const validateForm = () => {
+        let valid = true
+        const newErrors = { ...errors }
+        
+        if (!formData.firstName.trim()) {
+            newErrors.firstName = 'First Name is required'
+            valid = false
+        } else {
+            newErrors.firstName = ''
+        }
+        
+        if (!formData.lastName.trim()) {
+            newErrors.lastName = 'Last Name is required'
+            valid = false
+        } else {
+            newErrors.lastName = ''
+        }
+        
+        if (!formData.email.trim()) {
+            newErrors.email = 'Email is required'
+            valid = false
+        } else {
+            newErrors.email = ''
+        }
+        
+        setErrors(newErrors)
+        return valid
+    }
+
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        if (validateForm()) {
+            try {
+                await createEmployee(formData)
+                router.push('/employees')
+            } catch (error) {
+                console.error('Error creating employee:', error)
+            }
+        }
+    }
+
+    return (
+        <div className='container'>
+            <br/><br/>
+            <div className='row'>
+                <div className='card col-md-6 offset-md-3'>
+                    <h2 className='text-center'>Add Employee</h2>
+                    <div className='card-body'>
+                        <form onSubmit={handleSubmit}>
+                            <div className='form-group mb-2'>
+                                <label className='form-label'>Employee First Name</label>
+                                <input
+                                    type="text"
+                                    placeholder='Enter Employee First Name'
+                                    name='firstName'
+                                    value={formData.firstName}
+                                    className={`form-control ${errors.firstName ? 'is-invalid' : ''}`}
+                                    onChange={handleChange}
+                                />
+                                {errors.firstName && <div className='invalid-feedback'>{errors.firstName}</div>}
+                            </div>
+                            <div className='form-group mb-2'>
+                                <label className='form-label'>Employee Last Name</label>
+                                <input
+                                    type="text"
+                                    placeholder='Enter Employee Last Name'
+                                    name='lastName'
+                                    value={formData.lastName}
+                                    className={`form-control ${errors.lastName ? 'is-invalid' : ''}`}
+                                    onChange={handleChange}
+                                />
+                                {errors.lastName && <div className='invalid-feedback'>{errors.lastName}</div>}
+                            </div>
+                            <div className='form-group mb-2'>
+                                <label className='form-label'>Employee Email</label>
+                                <input
+                                    type="email"
+                                    placeholder='Enter Employee Email'
+                                    name='email'
+                                    value={formData.email}
+                                    className={`form-control ${errors.email ? 'is-invalid' : ''}`}
+                                    onChange={handleChange}
+                                />
+                                {errors.email && <div className='invalid-feedback'>{errors.email}</div>}
+                            </div>
+                            <button type='submit' className='btn btn-success'>Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+(dashboard)/employees
+// app/(dashboard)/employees/page.jsx
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { deleteEmployee, listEmployees } from '../../services/AxiosService'
+import Link from 'next/link'
+
+export default function ListEmployeesPage() {
+    const [employees, setEmployees] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
+    const router = useRouter()
+
+    useEffect(() => {
+        const fetchEmployees = async () => {
+            try {
+                setLoading(true)
+                const data = await listEmployees()
+                // Asegúrate que data es un array
+                if (Array.isArray(data)) {
+                    setEmployees(data)
+                } else {
+                    throw new Error('Formato de datos inesperado')
+                }
+            } catch (err) {
+                console.error('Error al cargar empleados:', err)
+                setError(err.message)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchEmployees()
+    }, [])
+
+    const handleDelete = async (id) => {
+        if (confirm('¿Estás seguro de eliminar este empleado?')) {
+            try {
+                await deleteEmployee(id)
+                // Recargar la lista después de eliminar
+                setEmployees(prev => prev.filter(emp => emp.id !== id))
+            } catch (err) {
+                console.error('Error al eliminar empleado:', err)
+                setError('Error al eliminar empleado')
+            }
+        }
+    }
+
+    if (loading) {
+        return (
+            <div className="container text-center my-5">
+                <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Cargando...</span>
+                </div>
+                <p>Cargando lista de empleados...</p>
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="container alert alert-danger my-5">
+                <h4>Error al cargar empleados</h4>
+                <p>{error}</p>
+                <button 
+                    className="btn btn-primary"
+                    onClick={() => window.location.reload()}
+                >
+                    Reintentar
+                </button>
+            </div>
+        )
+    }
+
+    return (
+        <div className="container">
+            <h2 className="text-center my-4">Lista de Empleados</h2>
+            
+            <div className="mb-3 d-flex justify-content-between align-items-center">
+                <Link href="/add" className="btn btn-primary">
+                    Agregar Empleado
+                </Link>
+                <span className="badge bg-secondary">
+                    Total: {employees.length}
+                </span>
+            </div>
+
+            <div className="table-responsive">
+                <table className="table table-striped table-hover">
+                    <thead className="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Apellido</th>
+                            <th>Email</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {employees.length > 0 ? (
+                            employees.map((employee) => (
+                                <tr key={employee.id}>
+                                    <td>{employee.id}</td>
+                                    <td>{employee.firstName}</td>
+                                    <td>{employee.lastName}</td>
+                                    <td>{employee.email}</td>
+                                    <td>
+                                        <Link 
+                                            href={`/employees/edit/${employee.id}`}
+                                            className="btn btn-sm btn-warning me-2"
+                                        >
+                                            Editar
+                                        </Link>
+                                        <button
+                                            onClick={() => handleDelete(employee.id)}
+                                            className="btn btn-sm btn-danger"
+                                        >
+                                            Eliminar
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan="5" className="text-center py-4">
+                                    No se encontraron empleados
+                                </td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    )
+}
+(dashboard)/employees/edit/[id]
+// app/(dashboard)/employees/edit/[id]/page.jsx
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useRouter, useParams } from 'next/navigation'
+import { getEmployee, updateEmployee } from '../../../../services/AxiosService'
+
+export default function EditEmployeePage() {
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: ''
+  })
+  const { id } = useParams()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (id) {
+      getEmployee(id).then(response => {
+        setFormData({
+          firstName: response.data.firstName,
+          lastName: response.data.lastName,
+          email: response.data.email
+        })
+      }).catch(error => {
+        console.error('Error fetching employee:', error)
+        router.push('/employees') // Redirige si hay error
+      })
+    }
+  }, [id, router])
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    try {
+      await updateEmployee(id, formData)
+      router.push('/employees')
+    } catch (error) {
+      console.error('Error updating employee:', error)
+    }
+  }
+    return (
+        <div className='container'>
+            <br/><br/>
+            <div className='row'>
+                <div className='card col-md-6 offset-md-3'>
+                    <h2 className='text-center'>Update Employee</h2>
+                    <div className='card-body'>
+                        <form onSubmit={handleSubmit}>
+                            <div className='form-group mb-2'>
+                                <label className='form-label'>Employee First Name</label>
+                                <input
+                                    type="text"
+                                    placeholder='Enter Employee First Name'
+                                    name='firstName'
+                                    value={formData.firstName}
+                                    className={`form-control ${errors.firstName ? 'is-invalid' : ''}`}
+                                    onChange={handleChange}
+                                />
+                                {errors.firstName && <div className='invalid-feedback'>{errors.firstName}</div>}
+                            </div>
+                            <div className='form-group mb-2'>
+                                <label className='form-label'>Employee Last Name</label>
+                                <input
+                                    type="text"
+                                    placeholder='Enter Employee Last Name'
+                                    name='lastName'
+                                    value={formData.lastName}
+                                    className={`form-control ${errors.lastName ? 'is-invalid' : ''}`}
+                                    onChange={handleChange}
+                                />
+                                {errors.lastName && <div className='invalid-feedback'>{errors.lastName}</div>}
+                            </div>
+                            <div className='form-group mb-2'>
+                                <label className='form-label'>Employee Email</label>
+                                <input
+                                    type="email"
+                                    placeholder='Enter Employee Email'
+                                    name='email'
+                                    value={formData.email}
+                                    className={`form-control ${errors.email ? 'is-invalid' : ''}`}
+                                    onChange={handleChange}
+                                />
+                                {errors.email && <div className='invalid-feedback'>{errors.email}</div>}
+                            </div>
+                            <button type='submit' className='btn btn-success'>Update</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+components
+import React from 'react'
+
+const HeaderComponent = () => {
+  return (
+    <div>
+        <header>
+            <nav className='navbar navbar-dark bg-dark'>
+                <a className='navbar-brand' href="http://localhost:3000">Employee Management System</a>
+            </nav>
+        </header>
+    </div>
+  )
+}
+
+export default HeaderComponent
+
+import React from 'react'
+
+const FooterCompoment = () => {
+  return (
+    <div>
+        <footer className='footer'>
+            <span>All rights reserved 2025 by Sogni_Appesi</span>
+
+        </footer>
+    </div>
+  )
+}
+
+export default FooterCompoment
+
+services
+// app/services/AxiosService.js
+import axios from 'axios';
+
+const apiClient = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api',
+  timeout: 30000,
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+
+// Interceptor para logging de errores
+apiClient.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response) {
+      // El servidor respondió con un status code fuera del rango 2xx
+      console.error('[AXIOS ERROR RESPONSE DATA]', error.response.data);
+      console.error('[AXIOS ERROR RESPONSE STATUS]', error.response.status);
+      console.error('[AXIOS ERROR RESPONSE HEADERS]', error.response.headers);
+    } else if (error.request) {
+      // La petición fue hecha pero no se recibió respuesta
+      console.error('[AXIOS ERROR REQUEST]', error.request);
+    } else {
+      // Error al configurar la petición
+      console.error('[AXIOS ERROR MESSAGE]', error.message);
+    }
+    console.error('[AXIOS ERROR CONFIG]', error.config);
+    
+    return Promise.reject(error);
+  }
+);
+
+export const listEmployees = async () => {
+  try {
+    console.log('[DEBUG] Making request to:', apiClient.defaults.baseURL + '/employees');
+    const response = await apiClient.get('/employees');
+    console.log('[DEBUG] Response data:', response.data);
+    return response.data;
+  } catch (error) {
+    // Convertir el error a un objeto simple para mejor visualización
+    const errorDetails = {
+      name: error.name,
+      message: error.message,
+      code: error.code,
+      status: error.response?.status,
+      responseData: error.response?.data,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    };
+    
+    console.error('[FULL ERROR DETAILS]', JSON.stringify(errorDetails, null, 2));
+    throw new Error(errorDetails.message || 'Failed to fetch employees');
+  }
+};
+
+export const createEmployee = async (employee) => {
+  try {
+    const response = await apiClient.post('/', employee);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating employee:', error);
+    throw error;
+  }
+};
+
+export const getEmployee = async (id) => {
+  try {
+    const response = await apiClient.get(`/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching employee with ID ${id}:`, error);
+    throw error;
+  }
+};
+
+export const updateEmployee = async (id, employee) => {
+  try {
+    const response = await apiClient.put(`/${id}`, employee);
+    return response.data;
+  } catch (error) {
+    console.error(`Error updating employee with ID ${id}:`, error);
+    throw error;
+  }
+};
+
+export const deleteEmployee = async (id) => {
+  try {
+    console.log(`[DEBUG] Deleting employee with ID: ${id}`);
+    console.log(`[DEBUG] Full URL: ${apiClient.defaults.baseURL}/${id}`);
+    
+    const response = await apiClient.delete(`/employees/${id}`); // Nota el /employees/
+    console.log('[DEBUG] Delete response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('[DELETE ERROR DETAILS]', {
+      status: error.response?.status,
+      data: error.response?.data,
+      url: error.config?.url,
+      method: error.config?.method
+    });
+    throw error;
+  }
+};

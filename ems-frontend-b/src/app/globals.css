@@ -1,0 +1,45 @@
+@import "tailwindcss";
+/* Estilos base */
+body {
+  background-color: #f8f9fa;
+}
+
+/* Notificaciones */
+.notification-wrapper {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  min-width: 300px;
+}
+
+/* Breadcrumbs personalizados */
+.breadcrumb {
+  background-color: transparent;
+  padding: 0.75rem 1rem;
+  border-radius: 0.25rem;
+}
+
+/* Espaciado para el footer */
+main {
+  padding-bottom: 60px;
+}
+
+/* Estilos para las tablas */
+.table-responsive {
+  overflow-x: auto;
+}
+
+.table {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+/* Estilos para los formularios */
+.card {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  border: none;
+}
+
+.form-control:focus {
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
